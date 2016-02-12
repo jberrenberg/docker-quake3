@@ -1,39 +1,29 @@
-FROM base/archlinux
+FROM alpine:latest
+MAINTAINER jberrenberg v1.0
 
-MAINTAINER jberrenberg
+# add the user that runs the process
+RUN adduser ioq3srv -D
 
-# enable multilib and update base system
+# to reduce image size all build and cleanup steps are performed in one docker layer
 RUN \
-  pacman -Sy --noconfirm reflector && \
-  reflector --verbose -l 5 --sort rate --save /etc/pacman.d/mirrorlist && \
-  echo "[multilib]" >> /etc/pacman.conf && \
-  echo "Include = /etc/pacman.d/mirrorlist" >> /etc/pacman.conf && \
-  pacman -Syu --noconfirm && \
-  pacman-db-upgrade 
-
-# install dependencies
-RUN pacman -S --noconfirm  \
-  binutils \
-  fakeroot \
-  unzip \
-  lib32-libgl \
-  lib32-libxext 
-
-# install quake 3
-RUN useradd -m q3a && \
-  curl -O https://aur.archlinux.org/packages/qu/quake3/quake3.tar.gz && \
-  tar xfz quake3.tar.gz -C /home/q3a/ && \
-  chown -R q3a /home/q3a/ && \
-  su q3a -c 'cd /home/q3a/quake3 && makepkg -f' && \
-  pacman --noconfirm -U /home/q3a/quake3/quake3-1.32c-2-x86_64.pkg.tar.xz && \
-  rm quake3.tar.gz 
-  
-# bootstraping 
-COPY bootstrap.sh /usr/bin/
-RUN chmod +x /usr/bin/bootstrap.sh 
-
-# environment variables
-ENV FS_GAME='baseq3'
+  echo "# INSTALL DEPENDENCIES ##########################################" && \
+  apk add --update curl g++ gcc git make && \
+  mkdir -p /tmp/build && \
+  echo "# FETCH INSTALLATION FILES ######################################" && \
+  curl https://raw.githubusercontent.com/ioquake/ioq3/master/misc/linux/server_compile.sh -o /tmp/build/compile.sh && \
+  curl http://ioquake3.org/data/quake3-latest-pk3s.zip --referer http://ioquake3.org/extras/patch-data/ -o /tmp/build/quake3-latest-pk3s.zip && \
+  echo "# NOW THE INSTALLATION ##########################################" && \
+  echo "y" | su ioq3srv -c "sh /tmp/build/compile.sh" && \
+  unzip /tmp/build/quake3-latest-pk3s.zip -d /tmp/build/ && \
+  su ioq3srv -c "cp -r /tmp/build/quake3-latest-pk3s/* ~/ioquake3" && \
+  ln -s /pak0.pk3 /home/ioq3srv/ioquake3/baseq3/pak0.pk3 && \
+  echo "# CLEAN UP ######################################################" && \
+  apk del curl g++ gcc git make && \
+  rm -rf /var/cache/apk/* && \
+  rm -rf /tmp/build/
+ 
+USER ioq3srv
 
 EXPOSE 27960/udp
-ENTRYPOINT  ["bootstrap.sh"]
+
+ENTRYPOINT ["/home/ioq3srv/ioquake3/ioq3ded.x86_64"]
