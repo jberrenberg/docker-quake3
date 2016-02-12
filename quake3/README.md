@@ -1,23 +1,22 @@
-# Quake3 Dedicated Server on Alpine Linux
+# Quake3 Server on Alpine Linux
 
-This image provides a simple quake3 dedicated server. It was originally based
-on [Arch Linux](https://archlinux.org) but moved to [Apline
-Linux](https://alpinelinux.org/). This change reduced the image size from
-around 900mb to 32mb.
+This image provides a simple quake3 dedicated server. It was originally based on [Arch Linux](https://archlinux.org) but moved to [Apline Linux](https://alpinelinux.org/). This change reduced the image size from around 900mb to 32mb.
 
 ## Quickstart
 To run a simple baseq3 dedicated server do:
 
 ``` bash
 export PAK0=/path/to/pak0.pk3
-docker run -it --rm -v ${PAK0}:/pak0.pk3 -p 0.0.0.0:27960:27960/udp jberrenberg/quake3
+docker run -it --rm -v ${PAK0}:/pak0.pk3 \
+-p 0.0.0.0:27960:27960/udp jberrenberg/quake3
 ```
 
 To run the server in the background replace the `-it --rm` with a nice name `--name quake -d`
 
 ``` bash
 export PAK0=/path/to/pak0.pk3
-docker run --name quake -d -v ${PAK0}:/pak0.pk3 -p 0.0.0.0:27960:27960/udp jberrenberg/quake3
+docker run --name quake -d -v ${PAK0}:/pak0.pk3 \
+-p 0.0.0.0:27960:27960/udp jberrenberg/quake3
 ```
 
 Now to stop the server again use `docker stop`
@@ -34,9 +33,7 @@ docker rm quake3
 
 ## Real Setup
 
-Since we will add additional maps and configurations to our server, we will
-create a data container for these files. Use following command to create a
-empty busybox container named quake3-data
+Since we will add additional maps and configurations to our server, we will create a data container for these files. Use following command to create a empty busybox container named quake3-data
 
 ```bash
 docker run -v /home/ioq3srv/.q3a/baseq3 --name quake3-data busybox
