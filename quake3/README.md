@@ -115,3 +115,32 @@ enable autostart on boot
 systemctl enable quake3
 ```
 
+### Troubleshoot
+#### SELinux
+
+When running docker on centos with selinux in permissive mode, you might encounter some problems. Since it bad practice just to disable SELinux or run the docker container with `--privileged` we will also cover the steps how to do it the right way. This is a little out of scope but it can't harm to cover these steps here.
+
+The error:
+```bash
+Loading vm file vm/qagame.qvm...
+File "vm/qagame.qvm" found at "/home/ioq3srv/ioquake3/osp"
+----- Server Shutdown (Server fatal crashed: VM_CompileX86: mprotect failed) -----
+---------------------------
+VM_CompileX86: mprotect failed
+```
+
+First we will have a look at the audit logs
+
+```bash
+sudo grep -e ioq  /var/log/audit/audit.log |grep avc |tail -n 1
+type=AVC msg=audit(3333333333.222:111111): avc:  denied  { execute } for pid=23092 comm="ioq3ded.x86_64" path=20000000000000000000000000011111111111 dev="tmpfs" ino=1111111 scontext=system_u:system_r:svirt_lxc_net_t:s0:3333,5555 tcontext=system_u:object_r:tmpfs_t:s0 tclass=file
+```
+
+Now we will use this line to create a selinux module
+
+```bash
+sudo grep -e ioq  /var/log/audit/audit.log |grep avc |tail -n 1 | audit2allow -M quake3
+```
+
+This will create a `quake3.pp` and `quake3.te` file. Using `semodule -i quake3.pp` we can load this custom module. To check if the loading was successful use `semodule -l |grep quake3`. Now selinux should no longer interfere with running the quake3 docker container.
+
