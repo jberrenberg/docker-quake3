@@ -115,6 +115,34 @@ enable autostart on boot
 systemctl enable quake3
 ```
 
+### Using HTTP/FTP Download Support
+
+In case you plan to use custom maps on your server it might be a good idea to enable sv_allowDownload. ioquake allows you to redirect the download request to a dedicated http server serving your map files. To use this feature add sv_allowDownload 8 and sv_dlURL http://example.org to your server config.
+
+### NGINX example configuration
+
+Start your nginx container with --volumes-from quake3-data and use the configuration below.
+
+```
+server {
+  listen 80;
+
+  location / {
+    root /home/ioq3srv/.q3a/;
+    sendfile           on;
+    sendfile_max_chunk 1m;
+
+    if ($http_referer !~* (^ioQ3:\/\/.*)) {
+      return 401;
+    }
+  }
+
+  location ~ (\.cfg$) {
+    return 401;
+  }
+}
+```
+
 ### Troubleshoot
 #### SELinux
 
