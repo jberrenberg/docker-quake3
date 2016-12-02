@@ -1,5 +1,5 @@
 FROM alpine:latest
-MAINTAINER jberrenberg v1.0
+MAINTAINER jberrenberg v1.1
 
 # add the user that runs the process
 RUN adduser ioq3srv -D
@@ -11,7 +11,7 @@ RUN \
   mkdir -p /tmp/build && \
   echo "# FETCH INSTALLATION FILES ######################################" && \
   curl https://raw.githubusercontent.com/ioquake/ioq3/master/misc/linux/server_compile.sh -o /tmp/build/compile.sh && \
-  curl http://ioquake3.org/data/quake3-latest-pk3s.zip --referer http://ioquake3.org/extras/patch-data/ -o /tmp/build/quake3-latest-pk3s.zip && \
+  curl https://ioquake3.org/data/quake3-latest-pk3s.zip --referer https://ioquake3.org/extras/patch-data/ -o /tmp/build/quake3-latest-pk3s.zip && \
   echo "# NOW THE INSTALLATION ##########################################" && \
   echo "y" | su ioq3srv -c "sh /tmp/build/compile.sh" && \
   unzip /tmp/build/quake3-latest-pk3s.zip -d /tmp/build/ && \
