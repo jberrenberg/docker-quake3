@@ -1,5 +1,5 @@
-FROM alpine:latest
-MAINTAINER jberrenberg v1.1
+FROM alpine:latest as builder
+MAINTAINER jberrenberg v1.2
 
 # add the user that runs the process
 RUN adduser ioq3srv -D
@@ -15,14 +15,12 @@ RUN \
   echo "# NOW THE INSTALLATION ##########################################" && \
   echo "y" | su ioq3srv -c "sh /tmp/build/compile.sh" && \
   unzip /tmp/build/quake3-latest-pk3s.zip -d /tmp/build/ && \
-  su ioq3srv -c "cp -r /tmp/build/quake3-latest-pk3s/* ~/ioquake3" && \
-  ln -s /pak0.pk3 /home/ioq3srv/ioquake3/baseq3/pak0.pk3 && \
-  echo "# CLEAN UP ######################################################" && \
-  apk del curl g++ gcc git make && \
-  rm -rf /tmp/build/
+  su ioq3srv -c "cp -r /tmp/build/quake3-latest-pk3s/* ~/ioquake3"
  
+FROM alpine:latest 
+RUN adduser ioq3srv -D
+COPY --from=builder /home/ioq3srv/ioquake3 /home/ioq3srv/ioquake3
+RUN ln -s /pak0.pk3 /home/ioq3srv/ioquake3/baseq3/pak0.pk3
 USER ioq3srv
-
 EXPOSE 27960/udp
-
 ENTRYPOINT ["/home/ioq3srv/ioquake3/ioq3ded.x86_64"]
