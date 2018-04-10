@@ -1,6 +1,6 @@
-FROM jberrenberg/quake3:1.1
+FROM jberrenberg/quake3:latest
 
-MAINTAINER jberrenberg v1.1
+MAINTAINER jberrenberg v1.2
 
 USER root
 # add osp 
